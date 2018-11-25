@@ -115,13 +115,13 @@ step(fit, direction = 'backward')
 ```
 
 So my model is:
-```{r}
-model1 = lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + parity +          ppwt + smoken, data = data_baby)
+```{r my_model}
+model1 = lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + parity + ppwt + smoken, data = data_baby)
 ```
 
 ### Plot
 
-```{r}
+```{r plot2}
 data_baby %>% 
   add_predictions(model1) %>% 
   add_residuals(model1) %>% 
@@ -131,7 +131,47 @@ data_baby %>%
 ```
 
 The plot is used to detect unequal error variance (heteroscedasticity) and outliers.
+
 Ideally, we would like to see that:
+
 • Residual values bounce around 0
+
 • Residuals form a horizontal ‘band’ around zero: above and below (indication of equal variance)
+
 • No ‘unusual’ values stand out from the random pattern (indication of no potential outliers)
+
+My model does't fit the ideal situation, which means my model is not very good.
+
+## Compare models
+
+```{r other_models}
+model2 = lm(bwt ~ blength + gaweeks, data = data_baby)
+# One using length at birth and gestational age as predictors (main effects only)
+
+model3 = lm(bwt ~ bhead + blength + babysex + 
+            bhead*blength + bhead*babysex + blength*babysex + bhead*blength*babysex, data = data_baby)
+# One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
+```
+
+### cross-validated prediction error
+
+```{r cross-validated}
+cv_df = 
+  crossv_mc(data_baby, 100) %>% 
+  mutate(model1 = map(train, ~lm(bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + 
+                                   mrace + parity + ppwt + smoken, data = .x)),
+         model2 = map(train, ~lm(bwt ~ blength + gaweeks, data = .x)),
+         model3 = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + 
+                                   blength*babysex + bhead*blength*babysex, data = data_baby), data = .x)) %>% 
+  mutate(rmse1 = map2_dbl(model1, test, ~rmse(model = .x, data = .y)),
+         rmse2 = map2_dbl(model2, test, ~rmse(model = .x, data = .y)),
+         rmse3 = map2_dbl(model3, test, ~rmse(model = .x, data = .y)))
+
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  mutate(model = str_replace(model, "rmse", "model"),
+         model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+```
+
