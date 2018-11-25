@@ -28,7 +28,7 @@ data =
 
 ## Model for Baltimore, MD
 
-```{r}
+```{r Model_for_Baltimore}
 model = glm(bi_disposition ~ victim_age + victim_sex + victim_race, 
             data = filter(data, city_state == "Baltimore, MD"), family = binomial(link = "logit"))
 result = broom::tidy(model, conf.int = TRUE)
@@ -43,9 +43,29 @@ result %>%
 
 This is the estimate and confidence interval of the adjusted odds ratio for solving homicides comparing non-white victims to white victims keeping all other variables fixed.
 
-## Model for all cities
+## Model for each city
 
-```{r}
-
+```{r fitmodel, warning=FALSE}
+data_results = 
+  data %>% 
+  group_by(city_state) %>% 
+  nest() %>% 
+  mutate(models = map(data, ~glm(bi_disposition ~ victim_age + victim_sex + victim_race, 
+                                data = .x, family = binomial(link = "logit")))) %>% 
+  mutate(results = map(models, broom::tidy)) %>% 
+  mutate(results_ci = map(models, broom::confint_tidy)) %>% 
+  select(-data, -models) %>% 
+  unnest() 
 ```
 
+```{r Model_for_all}
+data_results %>% 
+  filter(term == "victim_racenon-white") %>% 
+  mutate(odds_ratio = exp(estimate), 
+         conf_low = exp(conf.low), conf_high = exp(conf.high)) %>% 
+  select(city_state, odds_ratio, conf_low, conf_high)
+```
+
+This is the estimate and confidence interval of the adjusted odds ratio for solving homicides comparing non-white victims to white victims keeping all other variables fixed.
+
+### Plot
