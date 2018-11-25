@@ -84,3 +84,21 @@ results_ci %>%
 ```
 
 This is the plot that shows the estimated ORs and CIs for each city
+
+# Problem 2
+
+## Tidy data
+```{r tiydata2, message=FALSE}
+data_baby = 
+  read_csv("http://p8105.com/data/birthweight.csv") %>% 
+  mutate(babysex = as.factor(recode(babysex, "1" = "male", "2" = "female"))) %>% 
+  mutate(frace = as.factor(recode(frace, "1" = "White", "2" = "Black", "3" = "Asian", "4" = "Puerto Rican",
+                                  "8" = "Other", "9" = "Unknown"))) %>% 
+  mutate(mrace = as.factor(recode(mrace, "1" = "White", "2" = "Black", "3" = "Asian", "4" = "Puerto Rican",
+                                  "8" = "Other"))) %>% 
+  mutate(malform = as.factor(recode(malform, "0" = "absent", "1" = "present")))
+
+sum(is.na(data_baby))
+```
+
+I converted numeric to factor where appropriate, and checked that there are no missing data.
