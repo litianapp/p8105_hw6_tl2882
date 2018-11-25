@@ -14,8 +14,8 @@ set.seed(1)
 
 # Problem 1
 
-## load data
-```{r loaddata, warning=FALSE}
+## Tidy data
+```{r tiydata, message=FALSE}
 data = 
   read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>% 
   unite(city_state, city, state, sep = ", ") %>% 
@@ -25,3 +25,27 @@ data =
   mutate(victim_race = fct_relevel(victim_race, "white")) %>% 
   mutate(victim_age = as.numeric(victim_age))
 ```
+
+## Model for Baltimore, MD
+
+```{r}
+model = glm(bi_disposition ~ victim_age + victim_sex + victim_race, 
+            data = filter(data, city_state == "Baltimore, MD"), family = binomial(link = "logit"))
+result = broom::tidy(model, conf.int = TRUE)
+
+result %>% 
+  filter(term == "victim_racenon-white") %>%
+  mutate(odds_ratio = exp(estimate), 
+         conf_low = exp(conf.low), conf_high = exp(conf.high)) %>% 
+  select(odds_ratio, conf_low, conf_high) %>% 
+  knitr::kable()
+```
+
+This is the estimate and confidence interval of the adjusted odds ratio for solving homicides comparing non-white victims to white victims keeping all other variables fixed.
+
+## Model for all cities
+
+```{r}
+
+```
+
