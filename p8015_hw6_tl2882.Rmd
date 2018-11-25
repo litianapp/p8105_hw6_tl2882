@@ -1,15 +1,27 @@
 ---
 title: "p8015_hw6_tl2882"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-library(p8105.datasets)
+library(modelr)
 
 set.seed(1)
-
 ```
 
+# Problem 1
+
+## load data
+```{r loaddata, warning=FALSE}
+data = 
+  read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>% 
+  unite(city_state, city, state, sep = ", ") %>% 
+  filter(!city_state %in% c("Dallas, TX", "Phoenix, AZ", "Kansas City, MO", "Tulsa, AL")) %>% 
+  mutate(bi_disposition = as.numeric(disposition == "Closed by arrest")) %>% 
+  mutate(victim_race = ifelse(victim_race == "White", "white", "non-white") ) %>% 
+  mutate(victim_race = fct_relevel(victim_race, "white")) %>% 
+  mutate(victim_age = as.numeric(victim_age))
+```
