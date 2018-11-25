@@ -175,3 +175,5 @@ cv_df %>%
   ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
+In these three models, my model has lowest RMSE which means it is the best among three models. 
+But actually, all three models have high RMSE. We should make futher improvements to get a better model. 
