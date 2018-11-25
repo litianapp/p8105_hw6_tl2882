@@ -59,13 +59,28 @@ data_results =
 ```
 
 ```{r Model_for_all}
-data_results %>% 
+results_ci = 
+  data_results %>% 
   filter(term == "victim_racenon-white") %>% 
   mutate(odds_ratio = exp(estimate), 
          conf_low = exp(conf.low), conf_high = exp(conf.high)) %>% 
   select(city_state, odds_ratio, conf_low, conf_high)
+
+results_ci
 ```
 
 This is the estimate and confidence interval of the adjusted odds ratio for solving homicides comparing non-white victims to white victims keeping all other variables fixed.
 
 ### Plot
+
+```{r}
+results_ci %>% 
+  mutate(city_state = fct_reorder(city_state, odds_ratio)) %>%
+  ggplot(aes(x = city_state, weight = odds_ratio)) +
+    geom_bar() + 
+    geom_errorbar(aes(ymin = conf_low, ymax = conf_high), width = 0.5) +
+    labs(title = "The estimates ORs and CIs for each city", y = "Proportion") +
+    theme(axis.text.x = element_text(angle = -90))
+```
+
+This is the plot that shows the estimated ORs and CIs for each city
