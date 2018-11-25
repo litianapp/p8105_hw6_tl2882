@@ -1,0 +1,15 @@
+---
+title: "p8015_hw6_tl2882"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(p8105.datasets)
+
+set.seed(1)
+
+```
+
