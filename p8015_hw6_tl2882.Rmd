@@ -98,7 +98,40 @@ data_baby =
                                   "8" = "Other"))) %>% 
   mutate(malform = as.factor(recode(malform, "0" = "absent", "1" = "present")))
 
-sum(is.na(data_baby))
+sum(is.na(data_baby)) # 0 means no "TRUE"
 ```
 
 I converted numeric to factor where appropriate, and checked that there are no missing data.
+
+## Model Selection
+
+I use stepwise regreession learned in "Biostatistical Methods" class.
+"Step" function uses AIC criterion for covariates selection.
+This methods develops a sequence of regression models, at each step adding or deleting a covariate.
+
+```{r stepwise}
+fit  = lm(bwt ~ ., data = data_baby)
+step(fit, direction = 'backward')
+```
+
+So my model is:
+```{r}
+model1 = lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + parity +          ppwt + smoken, data = data_baby)
+```
+
+### Plot
+
+```{r}
+data_baby %>% 
+  add_predictions(model1) %>% 
+  add_residuals(model1) %>% 
+  ggplot(aes(x = pred, y = resid)) +
+    geom_point(alpha = 0.1) +
+    labs(title = "Residuals against Fitted values", x = "Fitted values", y = "Residuals")
+```
+
+The plot is used to detect unequal error variance (heteroscedasticity) and outliers.
+Ideally, we would like to see that:
+• Residual values bounce around 0
+• Residuals form a horizontal ‘band’ around zero: above and below (indication of equal variance)
+• No ‘unusual’ values stand out from the random pattern (indication of no potential outliers)
